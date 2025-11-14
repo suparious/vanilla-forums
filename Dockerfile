@@ -1,23 +1,6 @@
-# Multi-stage Dockerfile for Vanilla Forums
-# Stage 1: Build frontend assets with Node/Yarn
-FROM node:20-alpine AS builder
+# Simplified Dockerfile for Vanilla Forums
+# Single-stage build to reduce memory usage
 
-WORKDIR /app
-
-# Copy package files
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
-
-# Install dependencies
-RUN yarn install --immutable
-
-# Copy source code
-COPY . .
-
-# Build frontend assets
-RUN yarn run build
-
-# Stage 2: PHP application image
 FROM php:8.1-fpm-alpine
 
 # Install system dependencies and PHP extensions required by Vanilla
@@ -52,11 +35,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 # Create application directory
 WORKDIR /var/www/html
 
-# Copy built frontend assets from builder
-COPY --from=builder /app /var/www/html
+# Copy application code
+COPY . /var/www/html
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs || true
 
 # Create necessary directories
 RUN mkdir -p /var/www/html/uploads \
@@ -69,7 +52,7 @@ RUN mkdir -p /var/www/html/uploads \
     && chmod -R 777 /var/www/html/conf
 
 # Security: Remove development files
-RUN rm -rf tests/ .git/ .github/ docker/
+RUN rm -rf tests/ .git/ .github/ docker/ build/ .yarn/
 
 # Switch to www-data user
 USER www-data

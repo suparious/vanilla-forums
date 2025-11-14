@@ -116,8 +116,8 @@ if ($Push) { $Build = $true }
 
 if ($Build) {
     Write-ColorOutput "`nBuilding Docker image..." "Cyan"
-    $BuildArgs = @()
-    if ($Push) { $BuildArgs += "-Push" }
+    $BuildArgs = @{}
+    if ($Push) { $BuildArgs.Push = $true }
 
     & ./build-and-push.ps1 @BuildArgs
 
