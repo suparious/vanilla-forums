@@ -1,0 +1,183 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vanilla-forums
+  namespace: vanilla-forums
+  labels:
+    app: vanilla-forums
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vanilla-forums
+  template:
+    metadata:
+      labels:
+        app: vanilla-forums
+    spec:
+      # Init container: Copy application code to shared volume
+      initContainers:
+      - name: copy-app
+        image: suparious/vanilla-forums:latest
+        imagePullPolicy: Always
+        command:
+          - sh
+          - -c
+          - |
+            echo "Copying application files to shared volume..."
+            cp -r /var/www/html/. /app/
+            echo "Setting permissions..."
+            chmod -R 755 /app
+            echo "Application files copied successfully"
+        volumeMounts:
+        - name: app
+          mountPath: /app
+
+      containers:
+      # PHP-FPM container
+      - name: php-fpm
+        image: suparious/vanilla-forums:latest
+        imagePullPolicy: Always
+        ports:
+        - name: fpm
+          containerPort: 9000
+          protocol: TCP
+        env:
+        # Database credentials
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: DB_PASSWORD
+        # Vanilla configuration
+        - name: VANILLA_COOKIE_SALT
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: VANILLA_COOKIE_SALT
+        - name: VANILLA_TITLE
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: VANILLA_TITLE
+        - name: VANILLA_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: vanilla-secrets
+              key: VANILLA_DOMAIN
+        volumeMounts:
+        - name: app
+          mountPath: /var/www/html
+        - name: uploads
+          mountPath: /var/www/html/uploads
+        - name: cache
+          mountPath: /var/www/html/cache
+        - name: conf
+          mountPath: /var/www/html/conf
+        - name: vanilla-config
+          mountPath: /var/www/html/conf/config.php
+          subPath: config.php
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      # Nginx container
+      - name: nginx
+        image: nginx:1.27-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: app
+          mountPath: /var/www/html
+        - name: uploads
+          mountPath: /var/www/html/uploads
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/vanilla.conf
+          subPath: vanilla.conf
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      volumes:
+      # Shared application code (from init container)
+      - name: app
+        emptyDir: {}
+      # Persistent uploads
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: vanilla-uploads
+      # Ephemeral cache
+      - name: cache
+        emptyDir: {}
+      # Configuration directory (ephemeral, config.php from ConfigMap)
+      - name: conf
+        emptyDir: {}
+      # Nginx configuration
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      # Vanilla configuration
+      - name: vanilla-config
+        configMap:
+          name: vanilla-config

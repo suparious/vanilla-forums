@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: vanilla-forums
+  labels:
+    app: vanilla-forums
+data:
+  vanilla.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /var/www/html;
+        index index.php;
+
+        # Timeouts
+        client_header_timeout 600;
+        client_body_timeout 600;
+        send_timeout 600;
+        proxy_read_timeout 600;
+        fastcgi_read_timeout 600;
+
+        # Security - deny access to sensitive directories
+        location ~* "/\.git" { deny all; return 403; }
+        location ~* "^/build/" { deny all; return 403; }
+        location ~* "^/cache/" { deny all; return 403; }
+        location ~* "^/cgi-bin/" { deny all; return 403; }
+        location ~* "^/uploads/import/" { deny all; return 403; }
+        location ~* "^/conf/" { deny all; return 403; }
+        location ~* "^/tests/" { deny all; return 403; }
+        location ~* "^/vendor/" { deny all; return 403; }
+        location ~* "^/docker/" { deny all; return 403; }
+        location ~* "^/node_modules/" { deny all; return 403; }
+        location ~* "^/.yarn/" { deny all; return 403; }
+
+        # Favicon
+        location ^~ "/favicon.ico" {
+            access_log off;
+            log_not_found off;
+            return 404;
+        }
+
+        # Default location handling
+        location / {
+            try_files /legacy-dist$uri $uri @vanilla;
+        }
+
+        # Prevent execution or downloading of PHP files
+        location ~* "\.php(/|$)" {
+            try_files . @vanilla;
+        }
+
+        # Vanilla Controller
+        location @vanilla {
+            # send to fastcgi
+            include fastcgi_params;
+
+            # relative to the root
+            fastcgi_param SCRIPT_NAME /;
+
+            # always execute index.php
+            fastcgi_param SCRIPT_FILENAME "$document_root/index.php";
+
+            # pass in the request path, without the query string
+            fastcgi_param PATH_INFO $request_path;
+
+            # Pass to PHP-FPM (localhost since it's in the same pod)
+            fastcgi_pass 127.0.0.1:9000;
+        }
+
+        # Static files caching
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            access_log off;
+        }
+    }

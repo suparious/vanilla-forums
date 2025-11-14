@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vanilla-config
+  namespace: vanilla-forums
+  labels:
+    app: vanilla-forums
+data:
+  config.php: |
+    <?php
+    /**
+     * Vanilla Forums Configuration
+     * This file is auto-generated for Kubernetes deployment
+     */
+
+    // Database Configuration
+    $Configuration['Database']['Host'] = getenv('DB_HOST');
+    $Configuration['Database']['Name'] = getenv('DB_NAME');
+    $Configuration['Database']['User'] = getenv('DB_USER');
+    $Configuration['Database']['Password'] = getenv('DB_PASSWORD');
+
+    // Site Configuration
+    $Configuration['Garden']['Title'] = getenv('VANILLA_TITLE') ?: 'Vanilla Forums';
+    $Configuration['Garden']['Cookie']['Salt'] = getenv('VANILLA_COOKIE_SALT');
+    $Configuration['Garden']['Cookie']['Domain'] = '';
+    $Configuration['Garden']['Registration']['ConfirmEmail'] = true;
+    $Configuration['Garden']['Email']['SupportName'] = 'Vanilla Forums';
+
+    // Disable full-text indexing by default (can be enabled later)
+    $Configuration['Database']['FullTextIndexing'] = false;
+
+    // Cache Configuration (future: integrate with Valkey)
+    $Configuration['Cache']['Enabled'] = false;
+    $Configuration['Cache']['Method'] = 'memcached';
+
+    // File uploads
+    $Configuration['Garden']['Upload']['MaxFileSize'] = '50M';
+
+    // Security
+    $Configuration['Garden']['TrustedDomains'] = [getenv('VANILLA_DOMAIN') ?: 'vanilla.lab.hq.solidrust.net'];
+
+    // Debug (disable in production)
+    $Configuration['Debug'] = false;

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vanilla-forums
+  labels:
+    name: vanilla-forums
+    app: vanilla-forums
