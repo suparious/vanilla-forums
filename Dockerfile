@@ -20,9 +20,9 @@ RUN yarn run build
 # Stage 2: PHP application image
 FROM php:8.1-fpm-alpine
 
-# Install PHP extensions required by Vanilla
+# Install system dependencies and PHP extensions required by Vanilla
 RUN apk add --no-cache \
-    curl \
+    curl-dev \
     libxml2-dev \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -32,12 +32,10 @@ RUN apk add --no-cache \
     libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        curl \
         dom \
         fileinfo \
         gd \
         intl \
-        json \
         mbstring \
         mysqli \
         pdo \
@@ -45,6 +43,8 @@ RUN apk add --no-cache \
         xml \
         zip \
     && rm -rf /var/cache/apk/*
+
+# Note: curl and json are built-in to PHP 8.1
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
