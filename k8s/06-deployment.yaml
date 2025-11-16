@@ -18,7 +18,7 @@ spec:
       # Init container: Copy application code to shared volume
       initContainers:
       - name: copy-app
-        image: suparious/vanilla-forums:latest
+        image: ghcr.io/suparious/vanilla-forums:latest
         imagePullPolicy: Always
         command:
           - sh
@@ -36,7 +36,7 @@ spec:
       containers:
       # PHP-FPM container
       - name: php-fpm
-        image: suparious/vanilla-forums:latest
+        image: ghcr.io/suparious/vanilla-forums:latest
         imagePullPolicy: Always
         ports:
         - name: fpm

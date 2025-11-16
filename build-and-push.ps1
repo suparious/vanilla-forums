@@ -4,14 +4,14 @@
     Build and push Vanilla Forums Docker image
 
 .DESCRIPTION
-    Builds the Vanilla Forums multi-stage Docker image and optionally pushes to Docker Hub.
+    Builds the Vanilla Forums multi-stage Docker image and optionally pushes to GitHub Container Registry.
     Supports cross-platform paths (WSL2 + Windows).
 
 .PARAMETER Login
-    Authenticate to Docker Hub before building
+    Authenticate to GitHub Container Registry before building
 
 .PARAMETER Push
-    Push the built image to Docker Hub
+    Push the built image to GitHub Container Registry
 
 .PARAMETER Tag
     Custom tag for the image (default: latest)
@@ -22,7 +22,7 @@
 
 .EXAMPLE
     .\build-and-push.ps1 -Login -Push
-    Build and push to Docker Hub
+    Build and push to GitHub Container Registry
 
 .NOTES
     Author: Claude Code
@@ -57,10 +57,10 @@ function Write-ColorOutput {
 Write-ColorOutput "`n=== Vanilla Forums Docker Build ===" "Cyan"
 Write-ColorOutput "Image: $ImageTag`n" "Yellow"
 
-# Docker Hub login
+# GitHub Container Registry login
 if ($Login) {
-    Write-ColorOutput "Logging in to Docker Hub..." "Cyan"
-    docker login
+    Write-ColorOutput "Logging in to GitHub Container Registry..." "Cyan"
+    docker login ghcr.io
     if ($LASTEXITCODE -ne 0) {
         Write-ColorOutput "Docker login failed!" "Red"
         exit 1
@@ -88,9 +88,9 @@ Write-ColorOutput "`nBuild successful! (Duration: $($BuildDuration.TotalMinutes.
 $ImageSize = docker images $ImageTag --format "{{.Size}}"
 Write-ColorOutput "Image size: $ImageSize" "Yellow"
 
-# Push to Docker Hub
+# Push to GitHub Container Registry
 if ($Push) {
-    Write-ColorOutput "`nPushing to Docker Hub..." "Cyan"
+    Write-ColorOutput "`nPushing to GitHub Container Registry..." "Cyan"
     docker push $ImageTag
 
     if ($LASTEXITCODE -ne 0) {
