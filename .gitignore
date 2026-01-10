@@ -141,3 +141,6 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 applications/dashboard/.yarn/*
+
+# Claude Code local settings (workstation-specific)
+.claude/settings.local.json

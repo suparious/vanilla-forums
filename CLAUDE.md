@@ -19,33 +19,15 @@
 
 ---
 
-## 📚 PLATFORM INTEGRATION (ChromaDB Knowledge Base)
+## 📚 PLATFORM INTEGRATION
 
-**When working in this submodule**, you cannot access the parent srt-hq-k8s repository files. Use ChromaDB to query platform capabilities and integration patterns.
+**Related Repositories**:
+- **srt-hq-k8s**: `/Users/shaun/repos/srt-hq-k8s/` - Kubernetes platform (12 nodes)
 
-**Collection**: `srt-hq-k8s-platform-guide`
-
-**Why This Matters for Vanilla Forums**:
-- Integrates with platform MySQL (data-platform namespace)
-- Uses platform ingress (Nginx Ingress Controller + cert-manager)
-- Uses platform storage (TrueNAS NFS for persistent uploads)
-- Monitored by platform Prometheus/Grafana
-- Can integrate with platform Valkey for caching (future enhancement)
-
-**Query When You Need**:
-- Platform architecture and three-tier taxonomy
-- MySQL data-platform connection details
-- Storage classes and TrueNAS NFS configuration
-- Ingress patterns and SSL certificate management
-- Monitoring integration (Prometheus metrics)
-
-**Example Queries**:
-```
-"What is the srt-hq-k8s platform architecture?"
-"How do I connect to MySQL in the data-platform?"
-"What storage classes are available for persistent volumes?"
-"How does cert-manager issue SSL certificates?"
-```
+**Platform Features Used**:
+- **MySQL**: data-platform namespace
+- **Storage**: TrueNAS NFS for uploads (20Gi PVC)
+- **Ingress**: nginx-ingress with TLS (cert-manager DNS-01)
 
 **When NOT to Query**:
 - ❌ Vanilla Forums configuration (see README-K8S.md)
