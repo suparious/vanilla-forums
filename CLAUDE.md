@@ -440,3 +440,15 @@ kubectl get pvc -n vanilla-forums
 **Platform Tier**: Apps
 **Database**: MySQL (data-platform)
 **Status**: Ready for first-time setup
+
+---
+
+## Ecosystem Context
+
+This repo is part of the **SolidRusT Networks** ecosystem managed by [srt-concierge](https://poseidon.hq.solidrust.net:30008/shaun/srt-concierge).
+
+For cross-repo context, service dependencies, and platform strategy:
+- **Repo inventory**: `/Users/shaun/repos/srt-concierge/docs/REPOSITORY-METADATA.md`
+- **Service map**: `/Users/shaun/repos/srt-concierge/docs/PRODUCTION-SERVICES.md`
+- **Network topology**: `/Users/shaun/repos/srt-concierge/docs/NETWORK-TOPOLOGY.md`
+- **Team registry**: `/Users/shaun/repos/srt-concierge/docs/TEAM-REGISTRY.md`
